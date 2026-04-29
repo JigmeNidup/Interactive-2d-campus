@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { MapPin } from "lucide-react";
 
 export default function AuthLayout({
   children,
@@ -12,7 +12,14 @@ export default function AuthLayout({
         href="/"
         className="mb-8 flex items-center gap-2 font-semibold text-foreground"
       >
-        <MapPin className="size-5" />
+        <Image
+          src="/logo.png"
+          alt="Campus Map logo"
+          width={28}
+          height={28}
+          className="size-7 rounded-md object-contain"
+          priority
+        />
         <span>Campus Map</span>
       </Link>
       <div className="w-full max-w-sm">{children}</div>

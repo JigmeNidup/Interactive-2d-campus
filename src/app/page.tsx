@@ -1,82 +1,104 @@
+import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, Layers, PencilRuler, Share2 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { MapPin, Pencil, Eye } from "lucide-react";
+
+export const metadata = {
+  title: "Campus Map",
+  description:
+    "Build and publish interactive campus maps. Draw building polygons on any image, attach metadata, and share a clean public view with your visitors.",
+};
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col">
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="border-b">
         <div className="container mx-auto flex h-14 items-center justify-between px-6">
-          <div className="flex items-center gap-2 font-semibold">
-            <MapPin className="size-5" />
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-semibold tracking-tight"
+          >
+            <Image
+              src="/logo.png"
+              alt="Campus Map logo"
+              width={28}
+              height={28}
+              className="size-7 rounded-md object-contain"
+              priority
+            />
             <span>Campus Map</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost">
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
-          </div>
+          </Link>
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/login">Sign in</Link>
+          </Button>
         </div>
       </header>
 
-      <section className="container mx-auto flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
-          Build interactive campus maps.
+      <section className="container mx-auto flex flex-1 flex-col items-center justify-center px-6 py-20 text-center">
+        <span className="rounded-full border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+          Interactive campus maps, made simple
+        </span>
+
+        <h1 className="mt-6 max-w-3xl text-balance text-4xl font-semibold tracking-tight md:text-5xl">
+          Plan, label, and publish your campus in one place.
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-          Upload a map image, draw building polygons, attach metadata, and
-          publish a beautiful, interactive view for visitors. Search, filter,
-          zoom, and explore.
+
+        <p className="mt-5 max-w-xl text-balance text-base leading-relaxed text-muted-foreground md:text-lg">
+          Upload a map image, outline buildings as polygons, attach details, and
+          share a polished public view with search, filters, and zoom.
         </p>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+
+        <div className="mt-8 flex items-center gap-3">
           <Button asChild size="lg">
-            <Link href="/login">
-              <Pencil className="size-4" />
-              Open the editor
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
             <Link href="/dashboard">
-              <Eye className="size-4" />
-              Go to dashboard
+              Open dashboard
+              <ArrowRight className="size-4" />
             </Link>
           </Button>
         </div>
 
-        <div className="mt-16 grid w-full max-w-4xl grid-cols-1 gap-6 text-left md:grid-cols-3">
-          <FeatureCard
+        <ul className="mt-16 grid w-full max-w-3xl grid-cols-1 gap-6 text-left sm:grid-cols-3">
+          <Feature
+            icon={<PencilRuler className="size-4" />}
             title="Polygon editor"
-            body="Draw arbitrary polygons or rectangles directly on top of any map image."
+            body="Trace any building with polygons or rectangles, snap, edit, and reorder."
           />
-          <FeatureCard
-            title="Categories & filters"
-            body="Tag buildings with categories. Visitors can toggle, search, and zoom."
+          <Feature
+            icon={<Layers className="size-4" />}
+            title="Categories & search"
+            body="Tag buildings, attach images and floor counts, then filter and search."
           />
-          <FeatureCard
-            title="One-click publish"
-            body="Flip a switch to share a public, read-only view of your map."
+          <Feature
+            icon={<Share2 className="size-4" />}
+            title="Publish & share"
+            body="Flip a switch and share a public read-only link. Update anytime."
           />
-        </div>
+        </ul>
       </section>
 
-      <footer className="border-t">
-        <div className="container mx-auto flex h-12 items-center justify-between px-6 text-sm text-muted-foreground">
-          <span>Campus Map</span>
-          <span>Next.js 16 - PostgreSQL</span>
-        </div>
-      </footer>
     </main>
   );
 }
 
-function FeatureCard({ title, body }: { title: string; body: string }) {
+function Feature({
+  icon,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+}) {
   return (
-    <div className="rounded-lg border bg-card p-6 shadow-sm">
-      <h3 className="font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-    </div>
+    <li className="space-y-1.5">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span className="flex size-7 items-center justify-center rounded-md border bg-muted/40 text-muted-foreground">
+          {icon}
+        </span>
+        {title}
+      </div>
+      <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
+    </li>
   );
 }

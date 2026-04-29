@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MapPin } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { useMapTransform } from "@/hooks/useMapTransform";
@@ -57,7 +57,14 @@ export function MapDisplay({ map }: MapDisplayProps) {
       <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-background px-4 py-3">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <MapPin className="size-5" />
+            <Image
+              src="/logo.png"
+              alt="Campus Map logo"
+              width={28}
+              height={28}
+              className="size-7 rounded-md object-contain"
+              priority
+            />
             <span>{map.name}</span>
           </Link>
           {map.description ? (

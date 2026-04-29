@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { LogOut, MapPin, Plus, User as UserIcon } from "lucide-react";
+import { LogOut, Plus, User as UserIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +23,18 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 items-center justify-between px-6">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <MapPin className="size-5" />
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 font-semibold"
+        >
+          <Image
+            src="/logo.png"
+            alt="Campus Map logo"
+            width={28}
+            height={28}
+            className="size-7 rounded-md object-contain"
+            priority
+          />
           <span>Campus Map</span>
         </Link>
 

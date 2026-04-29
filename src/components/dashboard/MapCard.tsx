@@ -5,10 +5,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, ImageOff, Loader2, Pencil, Trash2 } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Eye,
+  ImageOff,
+  Loader2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Card,
   CardContent,
@@ -37,6 +50,34 @@ export function MapCard({ map }: MapCardProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [deleting, setDeleting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopyLink() {
+    const url =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/map/${map.id}`
+        : `/map/${map.id}`;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+      setCopied(true);
+      toast.success("Link copied to clipboard");
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not copy link");
+    }
+  }
 
   async function handleDelete() {
     setDeleting(true);
@@ -116,6 +157,28 @@ export function MapCard({ map }: MapCardProps) {
               Preview
             </Link>
           </Button>
+
+          {map.isPublished ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCopyLink}
+                  aria-label="Copy public link"
+                >
+                  {copied ? (
+                    <Check className="size-4 text-emerald-600" />
+                  ) : (
+                    <Copy className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {copied ? "Copied!" : "Copy public link"}
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
