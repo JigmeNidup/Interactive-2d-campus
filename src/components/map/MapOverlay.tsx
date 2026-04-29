@@ -115,6 +115,7 @@ export function MapOverlay({
                     );
                   }}
                   onPointerLeave={() => setHover(null)}
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
                     onBuildingClick?.(b);

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useEditorStore } from "@/stores/editor-store";
 import { useMapTransform } from "@/hooks/useMapTransform";
 import { MapOverlay } from "@/components/map/MapOverlay";
-import { BuildingModal } from "@/components/map/BuildingModal";
+import { BuildingDrawer } from "@/components/map/BuildingDrawer";
 import { MapControls } from "@/components/map/MapControls";
 import { cn } from "@/lib/utils";
 import type { Building } from "@/types";
@@ -58,7 +58,7 @@ export function MapPreview() {
         onZoomOut={() => zoomBy(1 / 1.2)}
         onReset={resetView}
       />
-      <BuildingModal
+      <BuildingDrawer
         building={selected}
         onClose={() => setSelected(null)}
       />

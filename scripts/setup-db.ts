@@ -78,6 +78,7 @@ const SCHEMA_STATEMENTS: { label: string; sql: string }[] = [
         floors INTEGER,
         departments TEXT[] DEFAULT '{}',
         color VARCHAR(7),
+        image_url VARCHAR(500),
         sort_order INTEGER DEFAULT 0,
         locked BOOLEAN NOT NULL DEFAULT false,
         created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -88,6 +89,10 @@ const SCHEMA_STATEMENTS: { label: string; sql: string }[] = [
   {
     label: "ensure buildings.locked column (idempotent migration)",
     sql: `ALTER TABLE buildings ADD COLUMN IF NOT EXISTS locked BOOLEAN NOT NULL DEFAULT false`,
+  },
+  {
+    label: "ensure buildings.image_url column (idempotent migration)",
+    sql: `ALTER TABLE buildings ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)`,
   },
   {
     label: "create idx_campus_maps_user_id",

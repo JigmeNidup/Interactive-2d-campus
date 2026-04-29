@@ -142,8 +142,8 @@ export async function PUT(req: Request, { params }: RouteContext) {
         await client.query(
           `INSERT INTO buildings (
              map_id, name, abbreviation, category, description,
-             polygon_points, center_x, center_y, floors, departments, color, sort_order, locked
-           ) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13)`,
+             polygon_points, center_x, center_y, floors, departments, color, image_url, sort_order, locked
+           ) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13, $14)`,
           [
             id,
             b.name,
@@ -156,6 +156,7 @@ export async function PUT(req: Request, { params }: RouteContext) {
             b.floors ?? null,
             b.departments ?? [],
             b.color ?? null,
+            b.imageUrl ?? null,
             b.sortOrder ?? i,
             b.locked ?? false,
           ],

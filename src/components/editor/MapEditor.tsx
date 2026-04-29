@@ -24,6 +24,7 @@ import { EditorCanvas } from "./EditorCanvas";
 import { EditorToolbar } from "./EditorToolbar";
 import { BuildingList } from "./BuildingList";
 import { BuildingForm } from "./BuildingForm";
+import { BuildingImportExport } from "./BuildingImportExport";
 import { MapUploader } from "./MapUploader";
 import { MapPreview } from "./MapPreview";
 
@@ -81,6 +82,8 @@ export function MapEditor({ initialMap }: MapEditorProps) {
         floors: b.floors ?? null,
         departments: b.departments ?? [],
         color: b.color ?? null,
+        imageUrl: b.imageUrl ?? null,
+        locked: b.locked,
         sortOrder: idx,
       }));
 
@@ -297,9 +300,12 @@ function SidebarContent() {
       <Separator />
 
       <section>
-        <h3 className="mb-2 text-sm font-medium">
-          Buildings ({buildings.length})
-        </h3>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">
+            Buildings ({buildings.length})
+          </h3>
+          <BuildingImportExport />
+        </div>
         <BuildingList />
       </section>
 

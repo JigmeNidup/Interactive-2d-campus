@@ -51,6 +51,21 @@ interface History {
   future: Building[][];
 }
 
+export interface ImportableBuilding {
+  name: string;
+  abbreviation: string;
+  category: BuildingCategory;
+  description?: string | null;
+  polygonPoints: [number, number][];
+  centerX?: number;
+  centerY?: number;
+  floors?: number | null;
+  departments?: string[];
+  color?: string | null;
+  imageUrl?: string | null;
+  locked?: boolean;
+}
+
 export interface EditorStore {
   meta: MapMeta;
   buildings: Building[];
@@ -73,6 +88,10 @@ export interface EditorStore {
   pushHistorySnapshot: (snapshot: Building[]) => void;
   deleteBuilding: (id: string) => void;
   reorderBuildings: (orderedIds: string[]) => void;
+  importBuildings: (
+    items: ImportableBuilding[],
+    mode: "replace" | "append",
+  ) => number;
 
   setView: (view: Partial<MapViewState>) => void;
   resetView: () => void;
@@ -323,6 +342,55 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         isDirty: true,
       };
     });
+  },
+
+  importBuildings: (items, mode) => {
+    const { buildings, history, meta } = get();
+    const mapId = meta.id ?? "new";
+    const baseSortOrder =
+      mode === "replace" ? 0 : nextSortOrder(buildings);
+    const startingBuildings = mode === "replace" ? [] : buildings;
+
+    const imported: Building[] = items.map((r, idx) => {
+      const points = r.polygonPoints.map(
+        ([x, y]) => [x, y] as [number, number],
+      );
+      const [cx, cy] =
+        typeof r.centerX === "number" && typeof r.centerY === "number"
+          ? [r.centerX, r.centerY]
+          : centroidOf(points);
+      return {
+        id: uid(),
+        mapId,
+        name: r.name,
+        abbreviation: r.abbreviation,
+        category: r.category,
+        description: r.description ?? undefined,
+        polygonPoints: points,
+        centerX: cx,
+        centerY: cy,
+        floors: r.floors ?? undefined,
+        departments: r.departments ?? [],
+        color: r.color ?? CATEGORY_COLORS[r.category],
+        imageUrl: r.imageUrl ?? undefined,
+        sortOrder: baseSortOrder + idx,
+        locked: r.locked ?? false,
+      };
+    });
+
+    set((s) => ({
+      buildings: [...startingBuildings, ...imported],
+      drawing: {
+        ...s.drawing,
+        selectedBuildingId: null,
+        isDrawing: false,
+        currentPoints: [],
+      },
+      history: pushHistory(history, s.buildings),
+      isDirty: true,
+    }));
+
+    return imported.length;
   },
 
   setView: (view) => set((s) => ({ view: { ...s.view, ...view } })),

@@ -1,7 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Lock, Trash2, Unlock, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { toast } from "sonner";
+import {
+  ImagePlus,
+  Loader2,
+  Lock,
+  Trash2,
+  Unlock,
+  Upload,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +37,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useEditorStore } from "@/stores/editor-store";
+import {
+  ALLOWED_UPLOAD_MIME_TYPES,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_MB,
+} from "@/lib/validators";
 import {
   BUILDING_CATEGORIES,
   CATEGORY_COLORS,
@@ -213,6 +228,11 @@ export function BuildingForm({ building }: BuildingFormProps) {
         />
       </div>
 
+      <BuildingImageField
+        imageUrl={building.imageUrl}
+        onChange={(url) => commit("imageUrl", url)}
+      />
+
       <div className="space-y-2">
         <Label htmlFor="building-desc">Description</Label>
         <Textarea
@@ -294,6 +314,130 @@ export function BuildingForm({ building }: BuildingFormProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+interface BuildingImageFieldProps {
+  imageUrl: string | undefined;
+  onChange: (url: string | undefined) => void;
+}
+
+function BuildingImageField({ imageUrl, onChange }: BuildingImageFieldProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    if (!ALLOWED_UPLOAD_MIME_TYPES.has(file.type)) {
+      toast.error(`Unsupported file type: ${file.type || "unknown"}`);
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast.error(`File exceeds the ${MAX_UPLOAD_MB}MB limit`);
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        toast.error(data.error ?? "Upload failed");
+        return;
+      }
+      onChange(data.url);
+      toast.success("Image uploaded");
+    } catch (err) {
+      console.error(err);
+      toast.error("Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) void upload(file);
+    e.target.value = "";
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label>Image</Label>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/svg+xml"
+        className="hidden"
+        onChange={onPick}
+      />
+
+      {imageUrl ? (
+        <div className="space-y-2">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md border bg-muted">
+            <Image
+              src={imageUrl}
+              alt="Building image"
+              fill
+              sizes="(max-width: 768px) 100vw, 320px"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="flex-1"
+              onClick={() => inputRef.current?.click()}
+              disabled={busy}
+            >
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4" />
+              )}
+              Replace
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => onChange(undefined)}
+              disabled={busy}
+            >
+              <X className="size-4" />
+              Remove
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-center"
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+        >
+          {busy ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <ImagePlus className="size-4" />
+              Upload image
+            </>
+          )}
+        </Button>
+      )}
+      <p className="text-xs text-muted-foreground">
+        PNG, JPG, or SVG. Max {MAX_UPLOAD_MB}MB.
+      </p>
     </div>
   );
 }

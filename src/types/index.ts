@@ -27,6 +27,7 @@ export interface Building {
   floors?: number;
   departments?: string[];
   color?: string;
+  imageUrl?: string;
   sortOrder: number;
   locked: boolean;
 }

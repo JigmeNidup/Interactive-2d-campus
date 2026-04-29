@@ -26,11 +26,53 @@ export const buildingSchema = z.object({
     .regex(/^#([0-9a-fA-F]{6})$/, "Color must be a 6-digit hex value")
     .optional()
     .nullable(),
+  imageUrl: z.string().min(1).max(500).optional().nullable(),
   sortOrder: z.number().int().optional(),
   locked: z.boolean().optional(),
 });
 
 export type BuildingInput = z.infer<typeof buildingSchema>;
+
+export const buildingImportItemSchema = z.object({
+  name: z.string().min(1).max(255),
+  abbreviation: z
+    .string()
+    .min(1)
+    .max(10)
+    .transform((s) => s.toUpperCase()),
+  category: z.enum(BUILDING_CATEGORIES as [string, ...string[]]),
+  description: z.string().max(2000).optional().nullable(),
+  polygonPoints: z.array(pointSchema).min(3).max(100),
+  centerX: z.number().finite().optional(),
+  centerY: z.number().finite().optional(),
+  floors: z.number().int().min(0).max(500).optional().nullable(),
+  departments: z.array(z.string().max(255)).max(100).optional(),
+  color: z
+    .string()
+    .regex(/^#([0-9a-fA-F]{6})$/, "Color must be a 6-digit hex value")
+    .optional()
+    .nullable(),
+  imageUrl: z.string().min(1).max(500).optional().nullable(),
+  locked: z.boolean().optional(),
+});
+
+export type BuildingImportItem = z.infer<typeof buildingImportItemSchema>;
+
+export const buildingImportFileSchema = z.object({
+  version: z.number().int().optional(),
+  exportedAt: z.string().max(64).optional(),
+  source: z
+    .object({
+      mapName: z.string().max(255).optional(),
+      viewBoxWidth: z.number().optional(),
+      viewBoxHeight: z.number().optional(),
+    })
+    .partial()
+    .optional(),
+  buildings: z.array(buildingImportItemSchema).min(1).max(500),
+});
+
+export type BuildingImportFile = z.infer<typeof buildingImportFileSchema>;
 
 export const createMapSchema = z.object({
   name: z.string().min(1).max(255),

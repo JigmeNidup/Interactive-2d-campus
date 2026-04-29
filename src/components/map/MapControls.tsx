@@ -9,9 +9,19 @@ interface MapControlsProps {
   onReset: () => void;
 }
 
-export function MapControls({ onZoomIn, onZoomOut, onReset }: MapControlsProps) {
+export function MapControls({
+  onZoomIn,
+  onZoomOut,
+  onReset,
+}: MapControlsProps) {
   return (
-    <div className="absolute bottom-4 right-4 flex flex-col gap-1 rounded-md border bg-background/95 p-1 shadow-md backdrop-blur">
+    <div
+      className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 rounded-md border bg-background/95 p-1 shadow-md backdrop-blur"
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerUp={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.stopPropagation()}
+    >
       <Button
         size="icon-sm"
         variant="ghost"
@@ -32,7 +42,7 @@ export function MapControls({ onZoomIn, onZoomOut, onReset }: MapControlsProps) 
         size="icon-sm"
         variant="ghost"
         onClick={onReset}
-        aria-label="Reset view"
+        aria-label="Fit to screen"
       >
         <Maximize2 className="size-4" />
       </Button>

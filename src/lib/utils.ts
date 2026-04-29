@@ -60,6 +60,7 @@ export type BuildingRow = {
   floors: number | null;
   departments: string[] | null;
   color: string | null;
+  image_url: string | null;
   sort_order: number;
   locked: boolean | null;
 };
@@ -108,6 +109,7 @@ export function mapRowToBuilding(row: BuildingRow): Building {
     floors: row.floors ?? undefined,
     departments: row.departments ?? [],
     color: row.color ?? undefined,
+    imageUrl: row.image_url ?? undefined,
     sortOrder: row.sort_order,
     locked: row.locked ?? false,
   };

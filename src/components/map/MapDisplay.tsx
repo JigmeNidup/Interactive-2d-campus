@@ -9,7 +9,7 @@ import { MapOverlay } from "@/components/map/MapOverlay";
 import { MapControls } from "@/components/map/MapControls";
 import { SearchBar } from "@/components/map/SearchBar";
 import { CategoryFilter } from "@/components/map/CategoryFilter";
-import { BuildingModal } from "@/components/map/BuildingModal";
+import { BuildingDrawer } from "@/components/map/BuildingDrawer";
 import {
   BUILDING_CATEGORIES,
   type Building,
@@ -106,7 +106,7 @@ export function MapDisplay({ map }: MapDisplayProps) {
         />
       </div>
 
-      <BuildingModal
+      <BuildingDrawer
         building={selected}
         onClose={() => setSelected(null)}
       />
