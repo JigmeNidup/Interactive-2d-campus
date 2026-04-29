@@ -189,28 +189,26 @@ export function useMapTransform({
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (pinchState.current) {
-        if (!pinchState.current.pointers.has(e.pointerId)) return;
-        pinchState.current.pointers.set(e.pointerId, {
-          x: e.clientX,
-          y: e.clientY,
-        });
-        const points = [...pinchState.current.pointers.values()];
+      const pinch = pinchState.current;
+      if (pinch) {
+        if (!pinch.pointers.has(e.pointerId)) return;
+        pinch.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        const points = [...pinch.pointers.values()];
         if (points.length < 2) return;
         const dist = Math.hypot(
           points[0].x - points[1].x,
           points[0].y - points[1].y,
         );
-        const ratio = dist / pinchState.current.initialDist;
+        const ratio = dist / pinch.initialDist;
         const newScale = clamp(
-          pinchState.current.initialScale * ratio,
+          pinch.initialScale * ratio,
           MIN_SCALE,
           MAX_SCALE,
         );
+        const fx = pinch.midX;
+        const fy = pinch.midY;
         setViewState((v) => {
           const r = newScale / v.scale;
-          const fx = pinchState.current!.midX;
-          const fy = pinchState.current!.midY;
           return {
             scale: newScale,
             x: fx - (fx - v.x) * r,
@@ -220,14 +218,16 @@ export function useMapTransform({
         return;
       }
 
-      if (!panState.current) return;
-      if (panState.current.pointerId !== e.pointerId) return;
-      const dx = e.clientX - panState.current.startX;
-      const dy = e.clientY - panState.current.startY;
+      const pan = panState.current;
+      if (!pan) return;
+      if (pan.pointerId !== e.pointerId) return;
+      const dx = e.clientX - pan.startX;
+      const dy = e.clientY - pan.startY;
+      const startView = pan.startView;
       setViewState((v) => ({
         ...v,
-        x: panState.current!.startView.x + dx,
-        y: panState.current!.startView.y + dy,
+        x: startView.x + dx,
+        y: startView.y + dy,
       }));
     },
     [],
