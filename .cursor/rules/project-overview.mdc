@@ -1,0 +1,33 @@
+---
+description: High-level context for the Campus Map app
+alwaysApply: true
+---
+
+# Campus Map - Project Context
+
+Full-stack interactive campus map. Admin uploads a map image, draws building polygons over it in the editor, attaches metadata, and publishes a public read-only view.
+
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) + **TypeScript strict**
+- **Tailwind CSS v4** + **shadcn/ui** (`src/components/ui/*`)
+- **PostgreSQL** via `pg` (parameterized queries, JSONB for polygon points)
+- **NextAuth v5** (Credentials, JWT, Edge-safe middleware - see `auth.mdc`)
+- **Zustand** for editor state (`src/stores/editor-store.ts`)
+- **Zod** for validation (`src/lib/validators.ts`)
+- **Sonner** for toasts, **dnd-kit** for reordering
+
+## Route groups
+
+- `(auth)` - `/login` (public)
+- `(dashboard)` - `/dashboard`, `/editor`, `/editor/[mapId]` (auth-guarded by `src/middleware.ts`)
+- `(display)` - `/map/[mapId]` (public, only when `is_published`)
+- API: `auth/[...nextauth]`, `maps`, `maps/[id]`, `upload`, `files/[id]`
+
+## Conventions
+
+- Always run `npm run typecheck` and `npm run build` after substantive edits.
+- All DB columns are `snake_case`; the app uses `camelCase`. Use the mappers in `src/lib/utils.ts` (`mapRowToCampusMap`, `mapRowToBuilding`) - never read raw rows in components.
+- New building / map fields must be added in **all** of: SQL (`database/setup.sql` + idempotent `ALTER TABLE` in `scripts/setup-db.ts`), `BuildingRow`/`Building` types, mappers, Zod schemas, and the API `INSERT/UPDATE` statements.
+- Uploads go to `./uploads/` (project root, not `public/`) and are served via `GET /api/files/[id]`.
+- Use `next/image` with `unoptimized` for `/api/files/...` URLs.
