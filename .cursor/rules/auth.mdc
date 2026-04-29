@@ -1,0 +1,22 @@
+---
+description: NextAuth v5 Edge-safe configuration split
+globs: src/lib/auth.ts,src/lib/auth.config.ts,src/middleware.ts,src/app/api/auth/**
+alwaysApply: false
+---
+
+# Auth - Edge vs Node split
+
+NextAuth v5's middleware runs in the **Edge runtime**, which forbids Node-only modules (`pg`, `bcryptjs`, `node:fs`, `node:crypto`). The config is split in two:
+
+| File | Runtime | Contains |
+|------|---------|----------|
+| `src/lib/auth.config.ts` | Edge-safe | `trustHost`, `session`, `pages`, callbacks, **no providers** |
+| `src/lib/auth.ts` | Node | spreads `authConfig` and adds the `Credentials` provider with `pg` + `bcryptjs` |
+| `src/middleware.ts` | Edge | imports **only** `authConfig` and calls `NextAuth(authConfig).auth` |
+
+## Rules
+
+- Anything that touches `pg`, `bcryptjs`, or other Node APIs must live in `auth.ts`, never `auth.config.ts`.
+- `trustHost: true` is required so NextAuth accepts `localhost` and arbitrary hosts in dev / on-prem.
+- API route handlers (`src/app/api/**`) and server components import from `@/lib/auth` (the Node version) to call `auth()`.
+- The JWT callback adds `id` and `role`; the session callback projects them onto `session.user`. See `src/types/next-auth.d.ts` for the type augmentation - update both if you add JWT fields.

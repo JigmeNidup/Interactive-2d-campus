@@ -1,0 +1,38 @@
+---
+description: Database, query, and migration conventions
+globs: src/lib/db.ts,src/lib/utils.ts,src/lib/validators.ts,src/app/api/**,scripts/**,database/**
+alwaysApply: false
+---
+
+# Database Conventions
+
+## Always parameterized
+
+```ts
+// BAD - string interpolation
+await query(`SELECT * FROM users WHERE email = '${email}'`);
+
+// GOOD - parameterized
+await query("SELECT * FROM users WHERE email = $1", [email]);
+```
+
+`pg` binds parameters; never concatenate user input.
+
+## Transactions
+
+For multi-step writes (e.g. updating a map + replacing all its buildings) use `getClient()` and an explicit `BEGIN / COMMIT / ROLLBACK`. See `src/app/api/maps/[id]/route.ts` for the canonical pattern.
+
+## Schema is in two places - keep them in sync
+
+1. **`database/setup.sql`** - the source-of-truth one-shot script (creates role, db, tables, seeds admin via pgcrypto).
+2. **`scripts/setup-db.ts`** - the same schema, idempotent, plus `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` blocks for migrations.
+
+When you add a column, update **both** files, the `BuildingRow` / `CampusMapRow` types in `src/lib/utils.ts`, the corresponding mapper, the Zod schema in `src/lib/validators.ts`, and the API `INSERT` / `UPDATE` statements.
+
+## Mapper rule
+
+API routes return camelCase JSON. Use `mapRowToBuilding` / `mapRowToCampusMap`. Never expose raw `row.snake_case` to a client component.
+
+## Building INSERT order
+
+The `INSERT INTO buildings` columns in `src/app/api/maps/[id]/route.ts` must list every nullable / new field. Forgetting `image_url` or `locked` silently drops them on save - this has bitten us before.
