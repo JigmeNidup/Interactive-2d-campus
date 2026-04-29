@@ -1,0 +1,27 @@
+---
+description: File upload pipeline and serving
+globs: src/app/api/upload/**,src/app/api/files/**,src/lib/uploads.ts,src/components/editor/MapUploader.tsx,src/components/editor/BuildingForm.tsx
+alwaysApply: false
+---
+
+# Uploads
+
+## Why not `public/uploads/`
+
+Files in `public/uploads/` are not copied during `next build`, so anything uploaded before deploy disappears in production and anything uploaded after isn't visible. We write to `./uploads/` at the **project root** instead, then stream files back through a Node API route.
+
+## Pipeline
+
+1. Client (`MapUploader`, `BuildingImageField` in `BuildingForm`) → `POST /api/upload` with `FormData`.
+2. `src/app/api/upload/route.ts` (Node runtime, auth-guarded) writes to `UPLOAD_DIR` from `src/lib/uploads.ts`, returns `{ url: fileUrl(filename) }` where `fileUrl` is `/api/files/<filename>`.
+3. `src/app/api/files/[id]/route.ts` validates the filename against `isSafeFilename`, defends against path traversal, content-types via the extension map, and returns the bytes with a long immutable cache header.
+
+## Constraints
+
+- MIME allowlist + 25 MB cap from `src/lib/validators.ts` (`ALLOWED_UPLOAD_MIME_TYPES`, `MAX_UPLOAD_BYTES`, `MAX_UPLOAD_MB`). `next.config.ts` `serverActions.bodySizeLimit` is `26mb` to stay above this.
+- SVG handling: `next.config.ts` sets `dangerouslyAllowSVG: true` plus a strict CSP. The MapUploader parses `viewBox` / `width` / `height` to seed the editor's viewBox.
+- Always render uploaded images with `<Image src={url} unoptimized ... />` since the API route already serves the bytes directly.
+
+## Filename safety
+
+Never trust client filenames. `/api/upload` generates the on-disk filename. `/api/files/[id]` validates the requested name against `^[a-zA-Z0-9._-]{1,200}$` and rejects `..` / leading dots before touching the disk.
