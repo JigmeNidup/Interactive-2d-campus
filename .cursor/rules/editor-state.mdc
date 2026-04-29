@@ -1,0 +1,26 @@
+---
+description: Zustand editor store, building shape, undo/redo
+globs: src/stores/**,src/components/editor/**,src/hooks/usePolygonDrawing.ts,src/hooks/useBuildingSearch.ts
+alwaysApply: false
+---
+
+# Editor State (Zustand)
+
+Single store: `useEditorStore` in `src/stores/editor-store.ts`. Holds `meta` (map metadata), `buildings`, `drawing`, `view`, `history`, `isSaving`, `isDirty`.
+
+## Building shape
+
+A `Building` (`src/types/index.ts`) has: `id`, `mapId`, `name`, `abbreviation`, `category`, `polygonPoints`, `centerX/Y`, optional `description`, `floors`, `departments`, `color`, `imageUrl`, plus required `sortOrder` and `locked`. When you add a field, update the type, all defaults in the store, the BuildingForm UI, and the save payload in `MapEditor.handleSave`.
+
+## History rules
+
+- Mutations that produce a single discrete change push history via `pushHistory(history, currentBuildings)` **before** updating buildings.
+- For continuous interactions (dragging a polygon body or vertex), the caller takes a snapshot once at the start via `pushHistorySnapshot(currentBuildings)` and then calls `moveBuilding`/`updateBuilding` repeatedly without further snapshots until the gesture ends. See `EditorCanvas.tsx`'s `onMoveStart` / `onMove` props.
+
+## Save payload
+
+`MapEditor.handleSave` builds the buildings payload manually. Every persisted field must be listed there - missing a field silently strips it on save. See the `database.mdc` rule.
+
+## Import / export
+
+`importBuildings(items, mode)` in the store generates fresh IDs, rebinds `mapId` to the current map (or `"new"`), recomputes centroids when missing, defaults colors per category, and resets `sortOrder` by array index. The exported JSON file must therefore be portable - never include `id` or `mapId` in exports.

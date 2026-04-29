@@ -1,0 +1,45 @@
+---
+description: SVG coordinate transforms, pan capture, and click-vs-pan rules
+globs: src/components/map/**,src/components/editor/EditorCanvas.tsx,src/hooks/useMapTransform.ts
+alwaysApply: false
+---
+
+# SVG, pan capture, and click-vs-pan
+
+## Coordinate transforms
+
+Use `useMapTransform`'s `screenToSvg(clientX, clientY)`. Internally it uses `svg.getScreenCTM().inverse()` to convert client pixels into SVG viewBox coordinates, then undoes the inner `<g>` transform. **Do not** roll your own conversion from `containerRef.getBoundingClientRect()` - it ignores `preserveAspectRatio` and breaks when the SVG is letterboxed.
+
+## SVG layout
+
+- The outer `<svg>` keeps `preserveAspectRatio="xMidYMid meet"` (fits cleanly in the container).
+- The inner `<image>` uses `preserveAspectRatio="none"` so it stretches to fully cover the SVG's viewBox - otherwise the polygons drift away from the underlying image.
+
+## Pan capture pitfall (very important)
+
+The canvas container has `data-pan="true"`. Its `onPointerDown` handler calls `node.setPointerCapture(e.pointerId)` for **any** press inside it - including children like buttons or polygons. Once captured, the matching `pointerup` is delivered to the container, and Chromium then refuses to fire a `click` on the original child target.
+
+Fix: stop propagation at the child:
+
+```tsx
+// On any clickable child inside the panning container:
+<polygon
+  onPointerDown={(e) => e.stopPropagation()}
+  onClick={(e) => { e.stopPropagation(); onClick(); }}
+/>
+
+// On floating control overlays:
+<div onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
+  ...buttons
+</div>
+```
+
+Already applied in: `MapOverlay` polygons, `EditorCanvas` polygons / handles, `MapControls`. Apply the same pattern when adding new clickable overlays.
+
+## Right-click
+
+Context menu is suppressed at both the container and the SVG level via `onContextMenu={(e) => e.preventDefault()}`. Right-click is **not** a pan trigger.
+
+## Pinch / pan refs
+
+`onPointerMove` reads `panState.current` / `pinchState.current` synchronously into local `const`s before calling `setViewState` - the setter runs asynchronously and the refs can become null between read and use. Don't dereference these refs inside the `setViewState` updater.
