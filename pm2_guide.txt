@@ -1,0 +1,5 @@
+pm2 start npm --name "campus" -- start
+
+pm2 stop "campus"
+
+pm2 restart "campus"
