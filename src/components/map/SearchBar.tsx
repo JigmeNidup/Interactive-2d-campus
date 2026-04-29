@@ -32,13 +32,18 @@ export function SearchBar({ buildings, onPick }: SearchBarProps) {
         <Button
           variant="outline"
           size="sm"
-          className="w-[220px] justify-start text-muted-foreground"
+          aria-label="Search buildings"
+          className="w-9 justify-center px-0 text-muted-foreground sm:w-[220px] sm:justify-start sm:px-3"
         >
           <Search className="size-4" />
-          Search buildings...
+          <span className="hidden sm:inline">Search buildings...</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0" align="start">
+      <PopoverContent
+        className="w-[min(320px,calc(100vw-1.5rem))] p-0"
+        align="end"
+        sideOffset={6}
+      >
         <Command>
           <CommandInput placeholder="Search by name or abbreviation..." />
           <CommandList>

@@ -22,7 +22,8 @@ export function CategoryFilter({ visible, onChange }: CategoryFilterProps) {
       onValueChange={(values) => {
         onChange(new Set(values as BuildingCategory[]));
       }}
-      className="flex flex-wrap gap-1"
+      spacing={1}
+      className="flex w-max flex-nowrap items-center"
     >
       {BUILDING_CATEGORIES.map((cat) => (
         <ToggleGroupItem

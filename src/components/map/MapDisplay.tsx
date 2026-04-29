@@ -47,34 +47,45 @@ export function MapDisplay({ map }: MapDisplayProps) {
   );
 
   function focusBuilding(b: Building) {
-    centerOn(b.centerX, b.centerY, Math.max(view.scale, 2));
+    centerOn(b.centerX, b.centerY, Math.max(view.scale, 2), 0.5);
     setHighlightedId(b.id);
     window.setTimeout(() => setHighlightedId(null), 2500);
   }
 
-  return (
-    <div className="flex h-screen flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-background px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <Image
-              src="/logo.png"
-              alt="Campus Map logo"
-              width={28}
-              height={28}
-              className="size-7 rounded-md object-contain"
-              priority
-            />
-            <span>{map.name}</span>
-          </Link>
-          {map.description ? (
-            <p className="hidden text-sm text-muted-foreground sm:block">
-              {map.description}
-            </p>
-          ) : null}
-        </div>
+  function handleBuildingClick(b: Building) {
+    setHighlightedId(null);
+    setSelected(b);
+  }
 
-        <div className="flex items-center gap-3">
+  function handleDrawerClose() {
+    setSelected(null);
+  }
+
+  return (
+    <div className="flex h-dvh flex-col">
+      <header className="flex items-center justify-between gap-2 border-b bg-background px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
+        <Link
+          href="/"
+          className="flex min-w-0 items-center gap-2 font-semibold"
+        >
+          <Image
+            src="/logo.png"
+            alt="Campus Map logo"
+            width={28}
+            height={28}
+            className="size-7 shrink-0 rounded-md object-contain"
+            priority
+          />
+          <span className="truncate text-sm sm:text-base">{map.name}</span>
+        </Link>
+
+        {map.description ? (
+          <p className="hidden flex-1 truncate text-sm text-muted-foreground lg:block">
+            {map.description}
+          </p>
+        ) : null}
+
+        <div className="shrink-0">
           <SearchBar
             buildings={map.buildings}
             onPick={(b) => focusBuilding(b)}
@@ -82,15 +93,17 @@ export function MapDisplay({ map }: MapDisplayProps) {
         </div>
       </header>
 
-      <div className="border-b bg-background px-4 py-2">
-        <CategoryFilter visible={visible} onChange={setVisible} />
+      <div className="border-b bg-background">
+        <div className="overflow-x-auto px-3 py-2 sm:px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <CategoryFilter visible={visible} onChange={setVisible} />
+        </div>
       </div>
 
       <div
         ref={containerRef}
         data-pan="true"
         className={cn(
-          "map-canvas relative min-h-0 flex-1 overflow-hidden bg-muted/30",
+          "map-canvas relative min-h-0 w-full min-w-0 flex-1 touch-none self-stretch overflow-hidden bg-muted/30",
           isPanning ? "cursor-grabbing" : "cursor-grab",
         )}
         {...bindContainer}
@@ -103,8 +116,9 @@ export function MapDisplay({ map }: MapDisplayProps) {
           buildings={filteredBuildings}
           transform={transform}
           viewScale={view.scale}
+          selectedId={selected?.id ?? null}
           highlightedId={highlightedId}
-          onBuildingClick={(b) => setSelected(b)}
+          onBuildingClick={handleBuildingClick}
         />
         <MapControls
           onZoomIn={() => zoomBy(1.2)}
@@ -113,10 +127,7 @@ export function MapDisplay({ map }: MapDisplayProps) {
         />
       </div>
 
-      <BuildingDrawer
-        building={selected}
-        onClose={() => setSelected(null)}
-      />
+      <BuildingDrawer building={selected} onClose={handleDrawerClose} />
     </div>
   );
 }

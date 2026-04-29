@@ -12,8 +12,9 @@ Use `useMapTransform`'s `screenToSvg(clientX, clientY)`. Internally it uses `svg
 
 ## SVG layout
 
-- The outer `<svg>` keeps `preserveAspectRatio="xMidYMid meet"` (fits cleanly in the container).
-- The inner `<image>` uses `preserveAspectRatio="none"` so it stretches to fully cover the SVG's viewBox - otherwise the polygons drift away from the underlying image.
+Keep the outer `<svg>` on **`preserveAspectRatio="xMidYMid meet"`** always. Do **not** toggle `xMidYMin` / `xMidYMid` for overlays — that changes the CTM and breaks pan/zoom state.
+
+`BuildingDrawer` uses the same **left** sheet on all breakpoints; `MapDisplay` / `MapPreview` pass `selectedId={selected?.id ?? null}` so map selection matches the open drawer.
 
 ## Pan capture pitfall (very important)
 

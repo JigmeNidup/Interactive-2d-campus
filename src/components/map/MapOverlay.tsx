@@ -50,7 +50,7 @@ export function MapOverlay({
         height="100%"
         viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
         preserveAspectRatio="xMidYMid meet"
-        className="absolute inset-0 block h-full w-full"
+        className="absolute inset-0 block h-full w-full overflow-hidden"
         style={cursor ? { cursor } : undefined}
         onPointerDown={onSvgPointerDown}
         onContextMenu={(e) => e.preventDefault()}

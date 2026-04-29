@@ -16,7 +16,13 @@ export interface MapTransformApi {
   setView: (view: Partial<MapViewState>) => void;
   resetView: () => void;
   zoomBy: (factor: number, focusX?: number, focusY?: number) => void;
-  centerOn: (x: number, y: number, scale?: number) => void;
+  /** Places (svgX, svgY) at the horizontal center; vertical at `focusYRatio * height`. */
+  centerOn: (
+    x: number,
+    y: number,
+    scale?: number,
+    focusYRatio?: number,
+  ) => void;
   transform: string;
   containerRef: React.RefObject<HTMLDivElement | null>;
   svgRef: React.RefObject<SVGSVGElement | null>;
@@ -89,7 +95,12 @@ export function useMapTransform({
   );
 
   const centerOn = useCallback(
-    (svgX: number, svgY: number, targetScale?: number) => {
+    (
+      svgX: number,
+      svgY: number,
+      targetScale?: number,
+      focusYRatio: number = 0.5,
+    ) => {
       const node = containerRef.current;
       if (!node) return;
       const rect = node.getBoundingClientRect();
@@ -99,10 +110,11 @@ export function useMapTransform({
           MIN_SCALE,
           MAX_SCALE,
         );
+        const focusY = rect.height * focusYRatio;
         return {
           scale,
           x: rect.width / 2 - svgX * scale,
-          y: rect.height / 2 - svgY * scale,
+          y: focusY - svgY * scale,
         };
       });
     },

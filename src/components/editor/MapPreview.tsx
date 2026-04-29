@@ -51,7 +51,10 @@ export function MapPreview() {
         buildings={buildings}
         transform={transform}
         viewScale={view.scale}
-        onBuildingClick={(b) => setSelected(b)}
+        selectedId={selected?.id ?? null}
+        onBuildingClick={(b) => {
+          setSelected(b);
+        }}
       />
       <MapControls
         onZoomIn={() => zoomBy(1.2)}
